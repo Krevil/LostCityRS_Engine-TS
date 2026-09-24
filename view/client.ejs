@@ -57,7 +57,7 @@
             outline: none;
             -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
             z-index: -1;
-            image-rendering: pixelated;
+            image-rendering: url(#clean-anti-alias);
         }
 
         html:-webkit-full-screen {
@@ -223,7 +223,22 @@
         });
 
         function loadSettings() {
-            setFilter((localStorage.getItem('filtering') == 'true') ? 'pixelated' : 'auto');
+            if (localStorage.getItem('filtering') == 'pixelated')
+            {
+                setFilter('pixelated');
+            }
+            else if (localStorage.getItem('filtering') == 'auto')
+            {
+                setFilter('auto');
+            }
+            else if (localStorage.getItem('filtering') == 'matrix')
+            {
+                setFilter('matrix');
+            }
+            else
+            {
+                setFilter('pixelated');
+            }
             if (isMobile()) {
                 const keyboardChoiceContainerElement = document.getElementById('mobilekeyboard-container');
                 const keyboardChoiceElement = document.getElementById('mobilekeyboard');
@@ -314,20 +329,35 @@
 
         function setFilter(type) {
             let canvas = document.getElementById('canvas');
-            let filterSelect = 'auto';
-            switch (type) {
-                default:
-                case 'dropdown':
-                    filterSelect = document.getElementById('filtering').value;
-                    localStorage.setItem('filtering', filterSelect == 'auto' ? false : true);
+            let filterSelect = type;
+            if (type === 'dropdown') {
+                filterSelect = document.getElementById('filtering').value;
+            }
+
+            canvas.style.filter = 'none';
+
+            switch (filterSelect) {
+                case 'matrix':
+                    document.getElementById('filtering').value = 'matrix';
+                    localStorage.setItem('filtering', 'matrix');
+                    canvas.style.imageRendering = 'auto';
+                    canvas.style.filter = 'url(#clean-anti-alias)';
                     break;
+
                 case 'pixelated':
+                    document.getElementById('filtering').value = 'pixelated';
+                    localStorage.setItem('filtering', 'pixelated');
+                    
+                    canvas.style.imageRendering = 'pixelated';
+                    break;
+
                 case 'auto':
-                    filterSelect = type;
-                    document.getElementById('filtering').value = type;
+                default:
+                    document.getElementById('filtering').value = 'auto';
+                    localStorage.setItem('filtering', 'auto');
+                    canvas.style.imageRendering = 'auto';
                     break;
             }
-            canvas.style.imageRendering = filterSelect;
         }
     </script>
 </head>
@@ -353,6 +383,7 @@
                 <optgroup>
                     <option value="auto" id="auto">Auto Scaling</option>
                     <option value="pixelated" id="pixelated">Pixel Scaling</option>
+                    <option value="matrix" id="matrix">Matrix Scaling</option>
                 </optgroup>
             </select> |
             <span id="mobilekeyboard-container">
@@ -399,6 +430,14 @@
 
         loadSettings();
     </script>
+
+    <svg xmlns="http://www.w3.org/2000/svg" style="position: absolute; width: 0; height: 0; pointer-events: none; overflow: hidden;">
+        <defs>
+            <filter id="clean-anti-alias">
+            <feConvolveMatrix order="3" kernelMatrix="0 -0.35 0  -0.35 2.4 -0.35  0 -0.35 0" preserveAlpha="true"/>
+            </filter>
+        </defs>
+    </svg>
 </body>
 
 </html>
