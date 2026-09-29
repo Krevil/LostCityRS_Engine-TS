@@ -409,6 +409,8 @@ export default class LoginServer {
                                     })
                                     .executeTakeFirst();
                             }
+
+                            console.log('${username} has logged in.');
                         } finally {
                             this.loginRequests.delete(safeName);
                         }
@@ -455,6 +457,8 @@ export default class LoginServer {
                         );
 
                         await updateHiscores(account, PlayerLoading.load(username, new Packet(raw), null), profile);
+
+                        console.log('${username} has logged out.');
                     } else if (type === 'player_autosave') {
                         const { username, save } = msg;
 
